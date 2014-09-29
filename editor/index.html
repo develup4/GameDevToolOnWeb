@@ -1,0 +1,483 @@
+<!DOCTYPE HTML>
+<html lang="en-US" xmlns="http://www.w3.org/1999/html">
+    <head>
+        <title>Game Editor</title>
+
+        <meta charset="utf-8">
+        <meta name="apple-mobile-web-app-capable"   content="yes"/>
+        <meta name="full-screen"                    content="yes"/>
+        <meta name="screen-orientation"             content="portrait"/>
+        <meta name="x5-fullscreen"                  content="true"/>
+        <meta name="360-fullscreen"                 content="true"/>
+        <meta http-equiv="Content-type"             content="text/html; charset=utf-8">
+
+        // 스타일시트
+        <link rel="stylesheet" href="http://code.jquery.com/ui/1.10.4/themes/smoothness/jquery-ui.css">
+        <link rel="stylesheet" href="index.css">
+
+        // 외부 스크립트
+        <script src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
+        <script src="http://code.jquery.com/ui/1.10.4/jquery-ui.js"></script>
+        <script src="http://layout.jquery-dev.net/lib/js/jquery.layout-latest.js"></script>
+
+        // 내부 스크립트
+        <script src="/socket.io/socket.io.js"></script>
+        <script src="Layout/Canvas/BattleSceneEditor.js"></script>
+        <script src="Layout/Canvas/EventSceneEditor.js"></script>
+        <script src="Layout/Canvas/WorldmapSceneEditor.js"></script>
+        <script src="jQuery/src/timeline.js"></script>
+        <script src="jQuery/src/WrappedTimeline.js"></script>
+        <script src="index.js"></script>
+        <script src="Layout/Inspector/BattleSceneInspector.js"></script>
+        <script src="Layout/Inspector/WorldmapSceneInspector.js"></script>
+        <script src="Layout/Inspector/EventSceneInspector.js"></script>
+        <script src="GlobalFunctions.js"></script>
+        <script src="Layout/GlobalFunctions/BattleGlobalFunctions.js"></script>
+        <script src="Layout/GlobalFunctions/WorldmapGlobalFunctions.js"></script>
+        <script src="Layout/GlobalFunctions/EventGlobalFunctions.js"></script>
+        <script src="cocos2d.js"></script>
+        <script src="src/myApp.js"></script>
+    </head>
+    <body>
+        <div id="centerlayout" class="ui-layout-center">
+            <div class="ui-layout-center">
+                <div id="tabs">
+                    <ul>
+                        <li><a href="#tabs-1" title="스토리의 흐름을 그래프로 나타낼 수 있습니다.">SceneGraph</a></li>
+                    </ul>
+                    <div id="tabs-1" overflow="scroll">
+                        <canvas id='sceneGraphCanvas' width='1920' height='1080'></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="ui-layout-east">
+                <div id="tabs-east">
+                    <ul>
+                        <li><a href="#tabs-east-1" title="씬 세부정보를 수정할 수 있는 창입니다.">Scene</a></li>
+                        <li><a href="#tabs-east-2" title="전투 씬에서 사용되는 캐릭터를 추가할 수 있는 창입니다.">BattleCharacter</a></li>
+                        <li><a href="#tabs-east-3" title="이벤트 씬에서 사용되는 캐릭터를 추가할 수 있는 창입니다.">EventCharacter</a></li>
+                        <li><a href="#tabs-east-4" title="월드맵 씬에서 사용되는 도시를 추가할 수 있는 창입니다.">City</a></li>
+                    </ul>
+                    <div id="tabs-east-1" overflow="scroll">
+                        <li>
+                            <h4>씬 세부정보를 편집해주세요.</h4>
+                        </li>
+                        <hr>
+                        <p>
+                            <br>
+                        <h1>씬 이름을 입력해주세요.</h1>
+                        <br>
+                        <label for="sceneNameTextbox">이름:</label>
+                        <input id="sceneNameTextbox" title="씬을 구분하기 위해 씬의 이름을 입력해주세요." size="45%" maxlength="20">
+                        <button id="sceneNameEditButton" title="씬 이름을 변경합니다.">변경</button>
+                        </p>
+                        <br><hr><br>
+                        <div>
+                            <h3>해당 씬의 맵 이미지 파일을 드래그해 넣으세요.
+                                <button id="mapDeleteButton" title="업로드한 맵 이미지를 제거합니다.">삭제</button>
+                            </h3>
+                            <div id="mapImageDropZone">Drop image here</div>
+                            <br>
+                            <h3>해당 씬의 배경음악 파일을 드래그해 넣으세요.
+                                <button id="bgmDeleteButton" title="업로드한 배경음악 파일을 제거합니다.">삭제</button>
+                            </h3>
+                            <div id="bgmFileDropZone">Drop sound here</div>
+                        </div>
+                        <br><br>
+                        <h1>프로젝트 용량:</h1>
+                        <div id="capacityProgressbar" title="할당된 용량에 대한 사용량입니다."><div class="progress-label"></div></div>
+                        <br><hr><br>
+                        <div align="right">
+                            <button id="sceneEditButton" title="씬을 편집할 수 있는 탭을 엽니다.">씬 편집기 열기</button>
+                        </div>
+                    </div>
+                    <div id="tabs-east-2" overflow="scroll">
+                        <br>
+                        <li>
+                            <h1>캐릭터를 추가합니다.</h1>
+                        </li>
+                        <br>
+                        생성할 캐릭터 이름:
+                        <input id="battleCharNameTextbox" title="캐릭터 이름을 입력해주세요." size="36%" maxlength="20">
+                        <button id="createCharButton" title="캐릭터를 생성합니다.">생성</button>
+                        <br><br>
+                        <div align="right">
+                            <select id="nonPositionCharCombo">
+                                <option>미배치 캐릭터</option>
+                            </select>
+                            <button id="nonPosCharEditButton" title="미배치 캐릭터를 수정합니다.">수정하기</button>
+                        </div>
+                        <br><hr><br>
+                        <li>
+                            <h1>캐릭터를 수정합니다.</h1>
+                        </li>
+                        <br>
+                        <h1>기본정보</h1><br>
+                        이름:<br>
+                        <input id="battleCharNameChangeTextbox" title="캐릭터의 변경될 이름을 입력해주세요." size="55%" maxlength="20">
+                        <br>
+                        <br>X좌표:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                        Y좌표:<br>
+                        <input id="battleCharXSpinner" size="21%" name="battleCharX">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                        <input id="battleCharYSpinner" size="21%" name="battleCharY">
+                        <br><br><hr>
+                        <br>캐릭터 방향:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                        적군 여부:<br>
+                        <span id="battleCharDirRadio">
+                            <input type="radio" id="battleCharDirRadio1" name="battleDirRadio" value="0"><label for="battleCharDirRadio1">상</label>
+                            <input type="radio" id="battleCharDirRadio2" name="battleDirRadio" value="1"><label for="battleCharDirRadio2">하</label>
+                            <input type="radio" id="battleCharDirRadio3" name="battleDirRadio" value="2"><label for="battleCharDirRadio3">좌</label>
+                            <input type="radio" id="battleCharDirRadio4" name="battleDirRadio" value="3"><label for="battleCharDirRadio4">우</label>
+                        </span>
+                        &nbsp;&nbsp;&nbsp;
+                        <input type="checkbox" id="isEnemyCheckbox" name="isEnemyCheckbox"><label for="isEnemyCheckbox">적</label>
+                        <br><br><hr><br>
+                        <h1>스테이터스</h1>
+                        <br>hp:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                        mp:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                        str:<br>
+                        <input id="battleCharHPSpinner" size="12%" name="battleCharHP">&nbsp;&nbsp;
+                        <input id="battleCharMPSpinner" size="12%" name="battleCharMP">&nbsp;&nbsp;
+                        <input id="battleCharSTRSpinner" size="12%" name="battleCharSTR">
+                        <br><br>dex:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;def:<br>
+                        <input id="battleCharDEXSpinner" size="12%" name="battleCharDEX">&nbsp;&nbsp;
+                        <input id="battleCharDEFSpinner" size="12%" name="battleCharDEF"><br><br><hr><br><br>
+                        <li>
+                            <h1>가만히 있을 때의 캐릭터 애니메이션 이미지를 드래그해 넣으세요.</h1>
+                        </li>
+                        <br>
+                        <div>
+                            <h1>위쪽 방향 스프라이트 이미지
+                                <button id="Idle-0-BattleDeleteButton" title="해당 스프라이트를 제거합니다.">삭제</button>
+                                &nbsp;&nbsp;프레임수:&nbsp;
+                                <input id="battleCharIdleUpSpinner" size="5%" name="battleCharIdleUpSpinner">
+                            </h1>
+                            <div id="Idle-Back-Battle" class="spriteDropZone">Drop sprite image here</div>
+                            <br>
+                            <h1>아래쪽 방향 스프라이트 이미지
+                                <button id="Idle-1-BattleDeleteButton" title="해당 스프라이트를 제거합니다.">삭제</button>
+                                &nbsp;&nbsp;프레임수:&nbsp;
+                                <input id="battleCharIdleDownSpinner" size="5%" name="battleCharIdleDownSpinner">
+                            </h1>
+                            <div id="Idle-Front-Battle" class="spriteDropZone">Drop sprite image here</div>
+                            <br>
+                            <h1>왼쪽 방향 스프라이트 이미지
+                                <button id="Idle-2-BattleDeleteButton" title="해당 스프라이트를 제거합니다.">삭제</button>
+                                &nbsp;&nbsp;프레임수:&nbsp;
+                                <input id="battleCharIdleLeftSpinner" size="5%" name="battleCharIdleLeftSpinner">
+                            </h1>
+                            <div id="Idle-Left-Battle" class="spriteDropZone">Drop sprite image here</div>
+                            <br>
+                            <h1>오른쪽 방향 스프라이트 이미지
+                                <button id="Idle-3-BattleDeleteButton" title="해당 스프라이트를 제거합니다.">삭제</button>
+                                &nbsp;&nbsp;프레임수:&nbsp;
+                                <input id="battleCharIdleRightSpinner" size="5%" name="battleCharIdleRightSpinner">
+                            </h1>
+                            <div id="Idle-Right-Battle" class="spriteDropZone">Drop sprite image here</div>
+                            <br>
+                        </div>
+                        <br><br>
+                        <li>
+                            <h1>걸어갈 때의 캐릭터 애니메이션 이미지를 드래그해 넣으세요.</h1>
+                        </li>
+                        <br>
+                        <div>
+                            <h1>위쪽 방향 스프라이트 이미지
+                                <button id="Move-0-BattleDeleteButton" title="해당 스프라이트를 제거합니다.">삭제</button>
+                                &nbsp;&nbsp;프레임수:&nbsp;
+                                <input id="battleCharMoveUpSpinner" size="5%" name="battleCharMoveUpSpinner">
+                            </h1>
+                            <div id="Move-Back-Battle" class="spriteDropZone">Drop sprite image here</div>
+                            <br>
+                            <h1>아래쪽 방향 스프라이트 이미지
+                                <button id="Move-1-BattleDeleteButton" title="해당 스프라이트를 제거합니다.">삭제</button>
+                                &nbsp;&nbsp;프레임수:&nbsp;
+                                <input id="battleCharMoveDownSpinner" size="5%" name="battleCharMoveDownSpinner">
+                            </h1>
+                            <div id="Move-Front-Battle" class="spriteDropZone">Drop sprite image here</div>
+                            <br>
+                            <h1>왼쪽 방향 스프라이트 이미지
+                                <button id="Move-2-BattleDeleteButton" title="해당 스프라이트를 제거합니다.">삭제</button>
+                                &nbsp;&nbsp;프레임수:&nbsp;
+                                <input id="battleCharMoveLeftSpinner" size="5%" name="battleCharMoveLeftSpinner">
+                            </h1>
+                            <div id="Move-Left-Battle" class="spriteDropZone">Drop sprite image here</div>
+                            <br>
+                            <h1>오른쪽 방향 스프라이트 이미지
+                                <button id="Move-3-BattleDeleteButton" title="해당 스프라이트를 제거합니다.">삭제</button>
+                                &nbsp;&nbsp;프레임수:&nbsp;
+                                <input id="battleCharMoveRightSpinner" size="5%" name="battleCharMoveRightSpinner">
+                            </h1>
+                            <div id="Move-Right-Battle" class="spriteDropZone">Drop sprite image here</div>
+                            <br>
+                        </div>
+                        <br><br>
+                        <li>
+                            <h1>공격할 때의 캐릭터 애니메이션 이미지를 드래그해 넣으세요.</h1>
+                        </li>
+                        <br>
+                        <div>
+                            <h1>위쪽 방향 스프라이트 이미지
+                                <button id="Attack-0-BattleDeleteButton" title="해당 스프라이트를 제거합니다.">삭제</button>
+                                &nbsp;&nbsp;프레임수:&nbsp;
+                                <input id="battleCharAttackUpSpinner" size="5%" name="battleCharAttackUpSpinner">
+                            </h1>
+                            <div id="Attack-Back-Battle" class="spriteDropZone">Drop sprite image here</div>
+                            <br>
+                            <h1>아래쪽 방향 스프라이트 이미지
+                                <button id="Attack-1-BattleDeleteButton" title="해당 스프라이트를 제거합니다.">삭제</button>
+                                &nbsp;&nbsp;프레임수:&nbsp;
+                                <input id="battleCharAttackDownSpinner" size="5%" name="battleCharAttackDownSpinner">
+                            </h1>
+                            <div id="Attack-Front-Battle" class="spriteDropZone">Drop sprite image here</div>
+                            <br>
+                            <h1>왼쪽 방향 스프라이트 이미지
+                                <button id="Attack-2-BattleDeleteButton" title="해당 스프라이트를 제거합니다.">삭제</button>
+                                &nbsp;&nbsp;프레임수:&nbsp;
+                                <input id="battleCharAttackLeftSpinner" size="5%" name="battleCharAttackLeftSpinner">
+                            </h1>
+                            <div id="Attack-Left-Battle" class="spriteDropZone">Drop sprite image here</div>
+                            <br>
+                            <h1>오른쪽 방향 스프라이트 이미지
+                                <button id="Attack-3-BattleDeleteButton" title="해당 스프라이트를 제거합니다.">삭제</button>
+                                &nbsp;&nbsp;프레임수:&nbsp;
+                                <input id="battleCharAttackRightSpinner" size="5%" name="battleCharAttackRightSpinner">
+                            </h1>
+                            <div id="Attack-Right-Battle" class="spriteDropZone">Drop sprite image here</div>
+                            <br>
+                        </div>
+                        <br><br>
+                        <li>
+                            <h1>맞을 때의 캐릭터 애니메이션 이미지를 드래그해 넣으세요.</h1>
+                        </li>
+                        <br>
+                        <div>
+                            <h1>위쪽 방향 스프라이트 이미지
+                                <button id="Hit-0-BattleDeleteButton" title="해당 스프라이트를 제거합니다.">삭제</button>
+                                &nbsp;&nbsp;프레임수:&nbsp;
+                                <input id="battleCharHitUpSpinner" size="5%" name="battleCharHitUpSpinner">
+                            </h1>
+                            <div id="Hit-Back-Battle" class="spriteDropZone">Drop sprite image here</div>
+                            <br>
+                            <h1>아래쪽 방향 스프라이트 이미지
+                                <button id="Hit-1-BattleDeleteButton" title="해당 스프라이트를 제거합니다.">삭제</button>
+                                &nbsp;&nbsp;프레임수:&nbsp;
+                                <input id="battleCharHitDownSpinner" size="5%" name="battleCharHitDownSpinner">
+                            </h1>
+                            <div id="Hit-Front-Battle" class="spriteDropZone">Drop sprite image here</div>
+                            <br>
+                            <h1>왼쪽 방향 스프라이트 이미지
+                                <button id="Hit-2-BattleDeleteButton" title="해당 스프라이트를 제거합니다.">삭제</button>
+                                &nbsp;&nbsp;프레임수:&nbsp;
+                                <input id="battleCharHitLeftSpinner" size="5%" name="battleCharHitLeftSpinner">
+                            </h1>
+                            <div id="Hit-Left-Battle" class="spriteDropZone">Drop sprite image here</div>
+                            <br>
+                            <h1>오른쪽 방향 스프라이트 이미지
+                                <button id="Hit-3-BattleDeleteButton" title="해당 스프라이트를 제거합니다.">삭제</button>
+                                &nbsp;&nbsp;프레임수:&nbsp;
+                                <input id="battleCharHitRightSpinner" size="5%" name="battleCharHitRightSpinner">
+                            </h1>
+                            <div id="Hit-Right-Battle" class="spriteDropZone">Drop sprite image here</div>
+                            <br>
+                        </div>
+                        <br><br>
+                        <h1>프로젝트 용량:</h1>
+                        <div id="battleCapacityProgressbar" title="할당된 용량에 대한 사용량입니다."><div class="progress-label"></div></div>
+                        <br><hr><br>
+                        <div align="right">
+                            <button id="battleCharEditButton" title="해당 캐릭터를 수정합니다..">캐릭터 수정하기</button>
+                            <button id="battleCharDeleteButton" title="해당 캐릭터를 삭제합니다.">캐릭터 삭제하기</button>
+                        </div>
+                    </div>
+                    <div id="tabs-east-3" overflow="scroll">
+                        <br>
+                        <li>
+                            <h1>캐릭터를 추가합니다.</h1>
+                        </li>
+                        <br>
+                        생성할 캐릭터 이름:
+                        <input id="eventCharNameTextbox" title="캐릭터 이름을 입력해주세요." size="36%" maxlength="20">
+                        <button id="createEventCharButton" title="캐릭터를 생성합니다.">생성</button>
+                        <br><br>
+                        <div align="right">
+                            <select id="nonPositionEventCharCombo">
+                                <option>미배치 캐릭터</option>
+                            </select>
+                            <button id="nonPosEventCharEditButton" title="미배치 캐릭터를 수정합니다.">수정하기</button>
+                        </div>
+                        <br><hr><br>
+                        <li>
+                            <h1>캐릭터를 수정합니다.</h1>
+                        </li>
+                        <br>
+                        <h1>기본정보</h1><br>
+                        이름:<br>
+                        <input id="eventCharNameChangeTextbox" title="캐릭터의 변경될 이름을 입력해주세요." size="55%" maxlength="20">
+                        <br>
+                        <br>최초 X좌표:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                        최초Y좌표:<br>
+                        <input id="eventCharXSpinner" size="21%" name="eventCharX">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                        <input id="eventCharYSpinner" size="21%" name="eventCharY">
+                        <br><br><br>최초 캐릭터 방향:&nbsp;&nbsp;&nbsp;
+                            <span id="eventCharDirRadio">
+                                <input type="radio" id="eventCharDirRadio1" name="eventDirRadio" value="0"><label for="eventCharDirRadio1">상</label>
+                                <input type="radio" id="eventCharDirRadio2" name="eventDirRadio" value="1"><label for="eventCharDirRadio2">하</label>
+                                <input type="radio" id="eventCharDirRadio3" name="eventDirRadio" value="2"><label for="eventCharDirRadio3">좌</label>
+                                <input type="radio" id="eventCharDirRadio4" name="eventDirRadio" value="3"><label for="eventCharDirRadio4">우</label>
+                            </span>
+                        <br><br><hr><br>
+                        <h1>캐릭터의 일러스트 이미지를 드래그해 넣으세요.
+                            <button id="illustDeleteButton" title="해당 일러스트 이미지를 제거합니다.">삭제</button>
+                        </h1>
+                        <br>
+                        <div id="illustDropZone">Drop illust image here</div>
+                        <br><br><hr><br>
+                        <li>
+                            <h1>가만히 있을 때의 캐릭터 애니메이션 이미지를 드래그해 넣으세요.</h1>
+                        </li>
+                        <br>
+                        <div>
+                            <h1>위쪽 방향 스프라이트 이미지
+                                <button id="Idle-0-EventDeleteButton" title="해당 스프라이트를 제거합니다.">삭제</button>
+                                &nbsp;&nbsp;프레임수:&nbsp;
+                                <input id="eventCharIdleUpSpinner" size="5%" name="eventCharIdleUpSpinner">
+                            </h1>
+                            <div id="Idle-Back-Event" class="spriteDropZone">Drop sprite image here</div>
+                            <br>
+                            <h1>아래쪽 방향 스프라이트 이미지
+                                <button id="Idle-1-EventDeleteButton" title="해당 스프라이트를 제거합니다.">삭제</button>
+                                &nbsp;&nbsp;프레임수:&nbsp;
+                                <input id="eventCharIdleDownSpinner" size="5%" name="eventCharIdleDownSpinner">
+                            </h1>
+                            <div id="Idle-Front-Event" class="spriteDropZone">Drop sprite image here</div>
+                            <br>
+                            <h1>왼쪽 방향 스프라이트 이미지
+                                <button id="Idle-2-EventDeleteButton" title="해당 스프라이트를 제거합니다.">삭제</button>
+                                &nbsp;&nbsp;프레임수:&nbsp;
+                                <input id="eventCharIdleLeftSpinner" size="5%" name="eventCharIdleLeftSpinner">
+                            </h1>
+                            <div id="Idle-Left-Event" class="spriteDropZone">Drop sprite image here</div>
+                            <br>
+                            <h1>오른쪽 방향 스프라이트 이미지
+                                <button id="Idle-3-EventDeleteButton" title="해당 스프라이트를 제거합니다.">삭제</button>
+                                &nbsp;&nbsp;프레임수:&nbsp;
+                                <input id="eventCharIdleRightSpinner" size="5%" name="eventCharIdleRightSpinner">
+                            </h1>
+                            <div id="Idle-Right-Event" class="spriteDropZone">Drop sprite image here</div>
+                            <br>
+                        </div>
+                        <br><br>
+                        <li>
+                            <h1>걸어갈 때의 캐릭터 애니메이션 이미지를 드래그해 넣으세요.</h1>
+                        </li>
+                        <br>
+                        <div>
+                            <h1>위쪽 방향 스프라이트 이미지
+                                <button id="Move-0-EventDeleteButton" title="해당 스프라이트를 제거합니다.">삭제</button>
+                                &nbsp;&nbsp;프레임수:&nbsp;
+                                <input id="eventCharMoveUpSpinner" size="5%" name="eventCharMoveUpSpinner">
+                            </h1>
+                            <div id="Move-Back-Event" class="spriteDropZone">Drop sprite image here</div>
+                            <br>
+                            <h1>아래쪽 방향 스프라이트 이미지
+                                <button id="Move-1-EventDeleteButton" title="해당 스프라이트를 제거합니다.">삭제</button>
+                                &nbsp;&nbsp;프레임수:&nbsp;
+                                <input id="eventCharMoveDownSpinner" size="5%" name="eventCharMoveDownSpinner">
+                            </h1>
+                            <div id="Move-Front-Event" class="spriteDropZone">Drop sprite image here</div>
+                            <br>
+                            <h1>왼쪽 방향 스프라이트 이미지
+                                <button id="Move-2-EventDeleteButton" title="해당 스프라이트를 제거합니다.">삭제</button>
+                                &nbsp;&nbsp;프레임수:&nbsp;
+                                <input id="eventCharMoveLeftSpinner" size="5%" name="eventCharMoveLeftSpinner">
+                            </h1>
+                            <div id="Move-Left-Event" class="spriteDropZone">Drop sprite image here</div>
+                            <br>
+                            <h1>오른쪽 방향 스프라이트 이미지
+                                <button id="Move-3-EventDeleteButton" title="해당 스프라이트를 제거합니다.">삭제</button>
+                                &nbsp;&nbsp;프레임수:&nbsp;
+                                <input id="eventCharMoveRightSpinner" size="5%" name="eventCharMoveRightSpinner">
+                            </h1>
+                            <div id="Move-Right-Event" class="spriteDropZone">Drop sprite image here</div>
+                            <br>
+                        </div>
+                        <br><br>
+                        <h1>프로젝트 용량:</h1>
+                        <div id="eventCapacityProgressbar" title="할당된 용량에 대한 사용량입니다."><div class="progress-label"></div></div>
+                        <br><hr><br>
+                        <div align="right">
+                            <button id="eventCharEditButton" title="해당 캐릭터를 수정합니다..">캐릭터 수정하기</button>
+                            <button id="eventCharDeleteButton" title="해당 캐릭터를 삭제합니다.">캐릭터 삭제하기</button>
+                        </div>
+                    </div>
+                    <div id="tabs-east-4" overflow="scroll">
+                    <br>
+                    <li>
+                        <h1>도시를 추가합니다.</h1>
+                    </li>
+                    <br>
+                    생성할 도시 이름:&nbsp;&nbsp;
+                    <input id="cityNameTextbox" title="도시 이름을 입력해주세요." size="39%" maxlength="20">
+                    <button id="createCityButton" title="도시를 생성합니다.">생성</button>
+                    <br><br>
+                    <div align="right">
+                        <select id="nonPositionCityCombo">
+                            <option>미배치 도시</option>
+                        </select>
+                        <button id="nonPosCityEditButton" title="미배치 도시를 수정합니다.">수정하기</button>
+                    </div>
+                    <br><hr><br>
+                    <li>
+                        <h1>도시를 수정합니다.</h1>
+                    </li>
+                    <br>
+                    <h1>기본정보</h1><br>
+                    이름:<br>
+                    <input id="cityNameChangeTextbox" title="도시의 변경될 이름을 입력해주세요." size="59%" maxlength="20">
+                    <br>
+                    <br>X좌표:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    Y좌표:<br>
+                    <input id="cityXSpinner" size="23%" name="cityX">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    <input id="cityYSpinner" size="23%" name="cityY">
+                    <br><br><hr><br>
+                    <li>
+                        <h1>해당 도시 선택시 진행할 씬을 선택해주세요.</h1>
+                    </li>
+                    <br>
+                    <select id="linkSceneCombo">
+                        <option>진행가능한 씬 리스트</option>
+                    </select>
+                    <br><br><hr><br>
+                    <li>
+                        <h1>도시의 이미지를 드래그해 넣으세요.</h1>
+                    </li>
+                    <br>
+                    <div id="cityImageDropZone" class="cityImageDropZone">Drop city image here</div>
+                    <br>
+                    <div align="right">
+                        <button id="cityImageDeleteButton" title="해당 이미지를 제거합니다.">이미지 삭제하기</button>
+                    </div>
+                    <br><hr><br>
+                    <h1>프로젝트 용량:</h1>
+                    <div id="worldMapCapacityProgressbar" title="할당된 용량에 대한 사용량입니다."><div class="progress-label"></div></div>
+                    <br><hr><br>
+                    <div align="right">
+                        <button id="cityEditButton" title="해당 도시를 수정합니다..">도시 수정하기</button>
+                        <button id="cityDeleteButton" title="해당 도시를 삭제합니다.">도시 삭제하기</button>
+                    </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="ui-layout-south" background="#EEEEEE">
+            <canvas id="timelineCanvas"></canvas>
+        </div>
+    </body>
+</html>
