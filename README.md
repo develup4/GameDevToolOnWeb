@@ -27,7 +27,7 @@
 
 [![Video Label](http://img.youtube.com/vi/AJnwccXTR2Q/0.jpg)](https://youtu.be/AJnwccXTR2Q?t=0s)
 
-- 이벤트 스테잊 작업 영상
+- 이벤트 스테이지 작업 영상
 
 
 [![Video Label](http://img.youtube.com/vi/bbsGJEzby6s/0.jpg)](https://youtu.be/bbsGJEzby6s?t=0s)
